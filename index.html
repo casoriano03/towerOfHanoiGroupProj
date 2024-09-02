@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=
+    , initial-scale=1.0"
+    />
+    <title>Document</title>
+    <style>
+      .game-container {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 auto;
+        max-width: 600px;
+      }
+
+      .tower-container {
+        position: relative;
+      }
+
+      .tower {
+        width: 100px;
+        height: 120px;
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        border-bottom: 8px solid darkred;
+      }
+
+      .tower-container::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 120px;
+        z-index: -10;
+        background-color: darkred;
+      }
+
+      .disk {
+        width: 20px;
+        height: 20px;
+        background-color: blue;
+        border: 4px solid gray;
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script>
+      // model
+      //   hvor er diskene, 0 = venstre tårn, 1 = midten, 2 = høyre
+      //   alle starter til venstre
+      let smallDiskTowerIndex = 1;
+      let mediumDiskTowerIndex = 2;
+      let largeDiskTowerIndex = 2;
+      let isGameFinished = false;
+   
+
+      // view
+      updateView();
+      
+      
+      function updateView() {
+
+        gameContainerDiv();
+        document.getElementById("app").innerHTML = /*HTML*/ `
+                    <h1>${isGameFinished?`You Win <button onclick="reload()">New Game</button>`:'Tower of Hanoi'}</h1>
+                    ${ gameContainerDiv()}
+                    Flytt liten disk til 
+                     ${createButtons(0, 'venstre tårn', 'Small')}
+                     ${createButtons(1, 'midtre tårn', 'Small')}
+                     ${createButtons(2, 'høyre tårn', 'Small')}
+                    <br/>
+                    Flytt medium disk
+                    ${createButtons(0, 'venstre tårn', 'Medium')}
+                    ${createButtons(1, 'midtre tårn', 'Medium')}
+                    ${createButtons(2, 'høyre tårn', 'Medium')}
+                    <br/>
+                    Flytt stor disk
+                    ${createButtons(0, 'venstre tårn', 'Large')}
+                    ${createButtons(1, 'midtre tårn', 'Large')}
+                    ${createButtons(2, 'høyre tårn', 'Large')}
+                    <br/>                
+                `;
+      }
+
+      // controller
+
+      function gameContainerDiv() {
+        return `<div class="game-container">
+                        <div class="tower-container">
+                            <div class="tower">
+                                ${createDiskAtTower(0)}                            
+                            </div>
+                        </div>
+                        <div class="tower-container">
+                            <div class="tower">
+                                ${createDiskAtTower(1)} 
+                            </div>
+                        </div>
+                        <div class="tower-container">
+                            <div class="tower">
+                                ${createDiskAtTower(2)}                             
+                            </div>
+                        </div>
+                    </div>`
+                
+      }
+
+      function createDiskAtTower(index) {
+        let html ='';
+
+        if(largeDiskTowerIndex === index) {
+          html+=`<div class="disk" style="width: 70px"></div>`;
+        }  
+
+        if (mediumDiskTowerIndex === index) {
+          html+=`<div class="disk" style="width: 50px"></div>`;
+        } 
+
+        if (smallDiskTowerIndex === index) {
+          html+=`<div class="disk" style="width: 30px"></div>`;
+        }
+
+        return html;
+      }
+ 
+
+      function moveSmallDisk(toTowerIndex) {
+       smallDiskTowerIndex = toTowerIndex
+       winCondition()
+        updateView();
+      }
+
+      function moveMediumDisk(toTowerIndex) {
+        if(smallDiskTowerIndex === toTowerIndex) {
+          return
+        }
+        mediumDiskTowerIndex = toTowerIndex
+        updateView();
+      }
+
+      function moveLargeDisk(toTowerIndex) {
+        if(smallDiskTowerIndex === toTowerIndex || mediumDiskTowerIndex === toTowerIndex) {
+          return
+        }
+        largeDiskTowerIndex = toTowerIndex
+        updateView();
+      }
+
+      function createButtons(toTowerIndex, placement, diskSize) {
+        let isDisabled = false;
+        if(diskSize === 'Small') {
+          if(smallDiskTowerIndex === toTowerIndex) {
+            isDisabled = true
+          }
+        }
+        if(diskSize === 'Medium') {
+          if(smallDiskTowerIndex === toTowerIndex || mediumDiskTowerIndex === toTowerIndex || mediumDiskTowerIndex === smallDiskTowerIndex) {
+            isDisabled = true
+          }
+        }
+        if(diskSize === 'Large') {
+          if(smallDiskTowerIndex === toTowerIndex || mediumDiskTowerIndex === toTowerIndex || largeDiskTowerIndex === toTowerIndex || largeDiskTowerIndex === smallDiskTowerIndex || largeDiskTowerIndex === mediumDiskTowerIndex) {
+            isDisabled = true
+          }
+        }
+        if (isDisabled) {
+          return `<button disabled>${placement}</button>`
+        }
+        return `<button onclick="move${diskSize}Disk(${toTowerIndex})">${placement}</button>`                    
+      }
+
+      function winCondition() {
+        if(smallDiskTowerIndex === 2 && mediumDiskTowerIndex === 2 && largeDiskTowerIndex === 2) {
+        isGameFinished = true
+        }
+      }
+
+      function reload() {
+        location.reload()
+      }
+
+      document.body.innerHTML += `
+                <h4>Oppgaver</h4>
+                Disse oppgavene er ment å løses med kun funksjoner, variabler, operatorer, if-setninger og MVC. Man trenger
+                ikke bruke løkker eller lister.
+                <ol>
+                    <li>
+                        Studer spillet her: <a href="https://www.mathsisfun.com/games/towerofhanoi.html">mathsisfun.com/games/towerofhanoi.html</a>
+                        og sørg for at dere forstår reglene. 
+                    </li>
+                    <li>
+                        Sørg for at <tt>updateView()</tt> tegner opp diskene ut fra innholdet av variablene i modellen.
+                        Merk at pga <tt>display: flex</tt> og <tt>flex-direction: column-reverse</tt> må dere legge til 
+                        diskene i motsatt rekkefølge av ellers. Den siste taggen inne i hvert tårn kommer øverst
+                    </li>
+                    <li>
+                        Implementer aller enkleste versjon av controller-funksjonene, nemlig å flytte hver disk uten å sjekke om det er lov
+                        eller ikke. Sjekk at det virker før dere går videre. 
+                    </li>
+                    <li>
+                        Implementer så reglene. Du kan ikke flytte en disk til et tårn om det alt ligger en disk der som er mindre.                
+                    </li>
+                    <li>
+                        Skjul alltid knappene som flytter en disk dit den allerede er. Skjul også knappene som er ulovlige å utføre.
+                    </li>
+                    <li>
+                        Vis en melding på skjermen hvis spillet er løst, det vil si at alle diskene er på høyre tårn. Vis i det
+                        tilfellet en knapp for å starte spillet på nytt. 
+                    </li>
+                </ol>
+            `;
+    </script>
+  </body>
+</html>
